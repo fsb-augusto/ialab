@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Assinatura – iaLAB</title>
+    <title>Gerador de Assinatura — iaLAB</title>
     <style>
         * {
             margin: 0;
@@ -46,7 +46,7 @@
         }
 
         .header-info::before {
-            content: '●';
+            content: '◉';
             color: #4ade80;
             font-size: 12px;
         }
@@ -147,54 +147,96 @@
             cursor: not-allowed;
         }
 
-        /* Toggle switch */
+        /* Toggle switch melhorado */
         .toggle-group {
             margin-bottom: 20px;
+            padding: 16px;
+            background: #1a1a1f;
+            border-radius: 10px;
+            border: 1px solid #2a2a32;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-group:hover {
+            border-color: #3a3a42;
+            background: #1d1d22;
+        }
+
+        .toggle-content {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #2a2a32;
+            cursor: pointer;
+        }
+
+        .toggle-left {
+            display: flex;
+            align-items: center;
         }
 
         .toggle-label {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 500;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            cursor: pointer;
+            color: #ffffff;
             user-select: none;
         }
 
         .toggle-switch {
             position: relative;
-            width: 48px;
-            height: 24px;
+            width: 52px;
+            height: 28px;
             background: #2a2a32;
-            border-radius: 12px;
+            border-radius: 14px;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
+            border: 2px solid #333;
+        }
+
+        .toggle-switch:hover {
+            border-color: #444;
         }
 
         .toggle-switch.active {
             background: #4ade80;
+            border-color: #4ade80;
         }
 
         .toggle-switch::after {
             content: '';
             position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 18px;
-            height: 18px;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
             background: #ffffff;
             border-radius: 50%;
             transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         .toggle-switch.active::after {
             transform: translateX(24px);
+        }
+
+        .toggle-status {
+            position: absolute;
+            font-size: 9px;
+            font-weight: 600;
+            top: 50%;
+            transform: translateY(-50%);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+        }
+
+        .toggle-status.off {
+            left: 26px;
+            color: #666;
+        }
+
+        .toggle-status.on {
+            left: 7px;
+            color: #1a1a1f;
         }
 
         .form-help {
@@ -267,6 +309,22 @@
 
         .instructions-path span {
             color: #4ade80;
+        }
+
+        /* Animação do campo de telefone */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #phoneGroup {
+            animation: slideDown 0.3s ease;
         }
 
         /* Modal */
@@ -381,7 +439,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Gerador de Assinatura – iaLAB</h1>
+            <h1>Gerador de Assinatura — iaLAB</h1>
             <div class="header-info">
                 Utilize o formulário à direita e copie a assinatura pronta para o Gmail.
             </div>
@@ -433,14 +491,21 @@
                     <input type="text" id="cargo" placeholder="Digite seu cargo" value="">
                 </div>
 
-                <div class="toggle-group">
-                    <label class="toggle-label" for="togglePhone">Incluir número de celular</label>
-                    <div class="toggle-switch" id="togglePhone" onclick="togglePhoneField()"></div>
+                <div class="toggle-group" onclick="togglePhoneField()">
+                    <div class="toggle-content">
+                        <div class="toggle-left">
+                            <label class="toggle-label" for="togglePhone">Incluir número de celular</label>
+                        </div>
+                        <div class="toggle-switch" id="togglePhone">
+                            <span class="toggle-status off" id="toggleOff">OFF</span>
+                            <span class="toggle-status on" id="toggleOn" style="display: none;">ON</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group" id="phoneGroup" style="display: none;">
-                    <input type="text" id="telefone" placeholder="Ex.: XX XXXXX XXXX" value="">
-                    <p class="form-help">Use o formato que preferir (ex.: "XX XXXXX XXXX").</p>
+                    <input type="text" id="telefone" placeholder="Ex.: 11 98765-4321" value="">
+                    <p class="form-help">Use o formato que preferir (ex.: "11 98765-4321").</p>
                 </div>
 
                 <button class="btn btn-reset" onclick="resetForm()">
@@ -510,13 +575,19 @@
             const toggleSwitch = document.getElementById('togglePhone');
             const phoneGroup = document.getElementById('phoneGroup');
             const phoneInput = document.getElementById('telefone');
+            const toggleOff = document.getElementById('toggleOff');
+            const toggleOn = document.getElementById('toggleOn');
             
             if (phoneEnabled) {
                 toggleSwitch.classList.add('active');
                 phoneGroup.style.display = 'block';
+                toggleOff.style.display = 'none';
+                toggleOn.style.display = 'block';
             } else {
                 toggleSwitch.classList.remove('active');
                 phoneGroup.style.display = 'none';
+                toggleOff.style.display = 'block';
+                toggleOn.style.display = 'none';
                 phoneInput.value = ''; // Limpa o campo quando desativado
             }
             
@@ -733,6 +804,8 @@
             phoneEnabled = false;
             document.getElementById('togglePhone').classList.remove('active');
             document.getElementById('phoneGroup').style.display = 'none';
+            document.getElementById('toggleOff').style.display = 'block';
+            document.getElementById('toggleOn').style.display = 'none';
             updatePreview();
             showToast('Formulário restaurado!');
         }
