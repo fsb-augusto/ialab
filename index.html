@@ -141,6 +141,62 @@
             background: #1f1f24;
         }
 
+        .form-group input:disabled {
+            background: #15151a;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        /* Toggle switch */
+        .toggle-group {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #2a2a32;
+        }
+
+        .toggle-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: #2a2a32;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: #4ade80;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            background: #ffffff;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(24px);
+        }
+
         .form-help {
             font-size: 12px;
             color: #666;
@@ -377,8 +433,12 @@
                     <input type="text" id="cargo" placeholder="Digite seu cargo" value="">
                 </div>
 
-                <div class="form-group">
-                    <label for="telefone">Telefone</label>
+                <div class="toggle-group">
+                    <label class="toggle-label" for="togglePhone">Incluir número de celular</label>
+                    <div class="toggle-switch" id="togglePhone" onclick="togglePhoneField()"></div>
+                </div>
+
+                <div class="form-group" id="phoneGroup" style="display: none;">
                     <input type="text" id="telefone" placeholder="Ex.: XX XXXXX XXXX" value="">
                     <p class="form-help">Use o formato que preferir (ex.: "XX XXXXX XXXX").</p>
                 </div>
@@ -441,8 +501,34 @@
     </div>
 
     <script>
+        // Variável para controlar se o telefone está ativo
+        let phoneEnabled = false;
+
+        // Função para alternar o campo de telefone
+        function togglePhoneField() {
+            phoneEnabled = !phoneEnabled;
+            const toggleSwitch = document.getElementById('togglePhone');
+            const phoneGroup = document.getElementById('phoneGroup');
+            const phoneInput = document.getElementById('telefone');
+            
+            if (phoneEnabled) {
+                toggleSwitch.classList.add('active');
+                phoneGroup.style.display = 'block';
+            } else {
+                toggleSwitch.classList.remove('active');
+                phoneGroup.style.display = 'none';
+                phoneInput.value = ''; // Limpa o campo quando desativado
+            }
+            
+            updatePreview();
+        }
+
         // Função para gerar o HTML da assinatura
         function generateSignatureHTML(nome, cargo, telefone) {
+            // Parte do telefone - só inclui se houver telefone e estiver habilitado
+            const phoneHTML = (phoneEnabled && telefone) ? 
+                `<div style="font-size:14px; line-height:20px; margin-top:30px;">Cel. ${telefone}</div>` : '';
+
             return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;">
         <tr>
           <td style="font-family:Arial, Helvetica, sans-serif; color:#333333; font-size:14px;">
@@ -459,7 +545,7 @@
                     <img src="https://i.imgur.com/GjCPFoV.png" alt="FSB Holding" width="56" style="display:block; border:0;">
                   </div>
                   
-                  <div style="font-size:14px; line-height:20px; margin-top:30px;">Cel. ${telefone}</div>
+                  ${phoneHTML}
                 </td>
 
                 <!-- Coluna direita -->
@@ -505,7 +591,7 @@
         function updatePreview() {
             const nome = document.getElementById('nome').value || 'Nome Sobrenome';
             const cargo = document.getElementById('cargo').value || 'Cargo';
-            const telefone = document.getElementById('telefone').value || 'XX XXXXX XXXX';
+            const telefone = phoneEnabled ? (document.getElementById('telefone').value || '') : '';
             
             const signatureHTML = generateSignatureHTML(nome, cargo, telefone);
             document.getElementById('signaturePreview').innerHTML = signatureHTML;
@@ -515,7 +601,11 @@
         function copySignature() {
             const nome = document.getElementById('nome').value || 'Nome Sobrenome';
             const cargo = document.getElementById('cargo').value || 'Cargo';
-            const telefone = document.getElementById('telefone').value || 'XX XXXXX XXXX';
+            const telefone = phoneEnabled ? (document.getElementById('telefone').value || '') : '';
+            
+            // Parte do telefone - só inclui se houver telefone e estiver habilitado
+            const phoneHTML = (phoneEnabled && telefone) ? 
+                `<div style="font-size:14px; line-height:20px; margin-top:30px;">Cel. ${telefone}</div>` : '';
             
             // Criar apenas o HTML interno da assinatura
             const signatureContent = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;">
@@ -534,7 +624,7 @@
                     <img src="https://i.imgur.com/GjCPFoV.png" alt="FSB Holding" width="56" style="display:block; border:0;">
                   </div>
                   
-                  <div style="font-size:14px; line-height:20px; margin-top:30px;">Cel. ${telefone}</div>
+                  ${phoneHTML}
                 </td>
 
                 <!-- Coluna direita -->
@@ -608,7 +698,7 @@
         function showHTMLCode() {
             const nome = document.getElementById('nome').value || 'Nome Sobrenome';
             const cargo = document.getElementById('cargo').value || 'Cargo';
-            const telefone = document.getElementById('telefone').value || 'XX XXXXX XXXX';
+            const telefone = phoneEnabled ? (document.getElementById('telefone').value || '') : '';
             
             const signatureHTML = generateSignatureHTML(nome, cargo, telefone);
             
@@ -640,6 +730,9 @@
             document.getElementById('nome').value = '';
             document.getElementById('cargo').value = '';
             document.getElementById('telefone').value = '';
+            phoneEnabled = false;
+            document.getElementById('togglePhone').classList.remove('active');
+            document.getElementById('phoneGroup').style.display = 'none';
             updatePreview();
             showToast('Formulário restaurado!');
         }
